@@ -1,33 +1,79 @@
 /** Register.jsx — user registration form */
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, Link } from 'react-router-dom';
 import * as api from '../api.js';
 
-export default function Register(){
-  const nav = useNavigate();
-  const [form, setForm] = useState({ username:'', password:'' });
+export default function Register() {
+  const navigate = useNavigate();
+  const [form, setForm] = useState({ username: '', password: '' });
   const [err, setErr] = useState('');
-  const submit = async (e)=> {
-    e.preventDefault(); setErr('');
-    const r = await api.post('/auth/register', form);
-    if (r.error) setErr(r.error); else nav('/login');
+  const [loading, setLoading] = useState(false);
+
+  const submit = async (e) => {
+    e.preventDefault();
+    setErr('');
+    setLoading(true);
+    
+    try {
+      const r = await api.post('/auth/register', form);
+      if (r.error) {
+        setErr(r.error);
+      } else {
+        navigate('/login');
+      }
+    } catch (error) {
+      setErr('Registration failed. Please try again.');
+    } finally {
+      setLoading(false);
+    }
   };
+
   return (
     <div className="container">
       <div className="panel">
-        <h2>Create account</h2>
+        <h2>Create Account</h2>
         <form onSubmit={submit} className="grid">
-          <div>
-            <label>Username</label>
-            <input value={form.username} onChange={e=>setForm({...form,username:e.target.value})}/>
+          <div className="form-group">
+            <label htmlFor="username">Username</label>
+            <input
+              id="username"
+              type="text"
+              value={form.username}
+              onChange={(e) => setForm({ ...form, username: e.target.value })}
+              required
+              disabled={loading}
+              minLength={3}
+            />
           </div>
-          <div>
-            <label>Password</label>
-            <input type="password" value={form.password} onChange={e=>setForm({...form,password:e.target.value})}/>
+          <div className="form-group">
+            <label htmlFor="password">Password</label>
+            <input
+              id="password"
+              type="password"
+              value={form.password}
+              onChange={(e) => setForm({ ...form, password: e.target.value })}
+              required
+              disabled={loading}
+              minLength={6}
+            />
           </div>
-          {err && <div className="badge" style={{background:'#5d1f1f'}}>⚠ {err}</div>}
-          <button className="btn">Register</button>
+          {err && (
+            <div className="error-message">
+              ⚠ {err}
+            </div>
+          )}
+          <button 
+            type="submit" 
+            className="btn" 
+            disabled={loading}
+          >
+            {loading ? 'Creating Account...' : 'Register'}
+          </button>
         </form>
+        
+        <div style={{ marginTop: '1rem', textAlign: 'center' }}>
+          <p>Already have an account? <Link to="/login">Login here</Link></p>
+        </div>
       </div>
     </div>
   );

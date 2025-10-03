@@ -1,7 +1,4 @@
-/**
- * db.js — MongoDB connection handler (Mongoose + Atlas/local)
- * Ensures stable connection, logs status, and gracefully handles errors.
- */
+/** db.js — MongoDB connection handler */
 import mongoose from 'mongoose';
 
 export async function connectDB(uri) {
@@ -11,23 +8,27 @@ export async function connectDB(uri) {
   }
 
   try {
-    mongoose.set('strictQuery', true);
-
+    // Remove deprecated options for newer mongoose versions
     await mongoose.connect(uri, {
       dbName: process.env.MONGODB_DB || 'dog_adoption',
-      useNewUrlParser: true,
-      useUnifiedTopology: true,
     });
 
-    console.log(`✅ Connected to MongoDB database: ${process.env.MONGODB_DB || 'dog_adoption'}`);
+    console.log(`✅ Connected to MongoDB: ${mongoose.connection.db.databaseName}`);
 
     mongoose.connection.on('error', (err) => {
       console.error('❌ MongoDB connection error:', err.message);
     });
 
     mongoose.connection.on('disconnected', () => {
-      console.warn('⚠️ MongoDB connection lost. Retrying...');
+      console.warn('⚠️ MongoDB connection lost');
     });
+
+    process.on('SIGINT', async () => {
+      await mongoose.connection.close();
+      console.log('MongoDB connection closed');
+      process.exit(0);
+    });
+
   } catch (err) {
     console.error('❌ Failed to connect to MongoDB:', err.message);
     process.exit(1);

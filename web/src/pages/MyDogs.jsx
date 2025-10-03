@@ -3,6 +3,8 @@ import { useEffect, useState } from 'react';
 import * as api from '../api.js';
 import Guard from '../components/Guard.jsx';
 import Loader from '../components/Loader.jsx';
+import { Link } from "react-router-dom";
+
 
 export default function MyDogs(){
   return <Guard><Inner/></Guard>;
@@ -40,7 +42,7 @@ function Inner(){
               <h3 style={{margin:'6px 0'}}>{d.name}</h3>
               <p style={{opacity:.9}}>{d.description}</p>
               <div style={{display:'flex',gap:8}}>
-                <a className="btn secondary" href={`/dogs/${d._id}`}>Details</a>
+                <Link className="btn secondary" to={`/dogs/${d._id}`}>Details</Link>
                 {d.status==='PENDING' && <button className="btn danger" onClick={()=>remove(d._id)}>Remove</button>}
               </div>
             </div>
